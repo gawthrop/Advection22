@@ -1,0 +1,61 @@
+<?xml version="1.0" standalone="no"?>
+<!-- Creator: fig2dev Version 3.2.7a -->
+<!-- CreationDate: 2022-03-27 15:46:40 -->
+<!-- Magnification: 1.05 -->
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="350pt" height="132pt"
+	viewBox="3550 653 5545 2094">
+<g fill="none">
+<!-- Line -->
+<rect x="3600" y="675" width="5400" height="2025" rx="105"
+	stroke="#ffffff" stroke-width="15px"/>
+<!-- Text -->
+<g transform="translate(5085,2025) rotate(-270)" >
+<text xml:space="preserve" x="0" y="0" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">Pipe:pin</text>
+</g><!-- Text -->
+<g transform="translate(7335,2025) rotate(-270)" >
+<text xml:space="preserve" x="0" y="0" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">Pipe:pout</text>
+</g><!-- Text -->
+<text xml:space="preserve" x="6300" y="990" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">Ce:P</text>
+<!-- Text -->
+<text xml:space="preserve" x="6300" y="2115" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">0</text>
+<!-- Text -->
+<text xml:space="preserve" x="4050" y="2115" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">0</text>
+<!-- Text -->
+<text xml:space="preserve" x="4050" y="990" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">Ce:Art</text>
+<!-- Text -->
+<text xml:space="preserve" x="8550" y="990" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">Ce:Ven</text>
+<!-- Text -->
+<text xml:space="preserve" x="8550" y="2115" fill="#000000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="216" text-anchor="middle">0</text>
+<!-- Text -->
+<text xml:space="preserve" x="4815" y="1800" fill="#ff0000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="168" text-anchor="middle">[A]</text>
+<!-- Text -->
+<text xml:space="preserve" x="7065" y="1800" fill="#ff0000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="168" text-anchor="middle">[A]</text>
+<!-- Text -->
+<text xml:space="preserve" x="5490" y="1800" fill="#ff0000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="168" text-anchor="middle">[B]</text>
+<!-- Text -->
+<text xml:space="preserve" x="7695" y="1800" fill="#ff0000" font-family="Helvetica" font-style="normal" font-weight="bold" font-size="168" text-anchor="middle">[B]</text>
+<!-- Line -->
+<polyline points=" 6300,1800 6300,1125 6525,1350"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polyline points=" 5400,2025 6075,2025 5850,2250"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polyline points=" 4275,2025 4950,2025 4725,2250"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polyline points=" 4050,1800 4050,1125 4275,1350"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polyline points=" 6525,2025 7200,2025 6975,2250"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polyline points=" 7650,2025 8325,2025 8100,2250"
+	stroke="#000000" stroke-width="15px"/>
+<!-- Line -->
+<polyline points=" 8550,1800 8550,1125 8775,1350"
+	stroke="#000000" stroke-width="15px"/>
+</g>
+</svg>
