@@ -3,7 +3,7 @@ import BondGraphTools as bgt
 import numpy as np
 import datetime
 
-def model(s,filename=None):
+def model(s,nameJunction=False,filename=None):
     """ Converts a stoichiometric matrix  to the BondGraphTools bond graph representation
     """
 
@@ -69,10 +69,17 @@ def model(s,filename=None):
              "{0}model.add({2}{1})\n"
     )
 
-    junStr = ("\n{0}## Junction {1}:{2}\n"
-              "{0}{2} = bgt.new('{1}')\n"
-              "{0}model.add({2})\n"
+    if nameJunction:
+        junStr = ("\n{0}## Junction {1}:{2}\n"
+                  "{0}{2} = bgt.new('{1}',name='{2}')\n"
+                  "{0}model.add({2})\n"
+        )
+    else:
+        junStr = ("\n{0}## Junction {1}:{2}\n"
+                  "{0}{2} = bgt.new('{1}')\n"
+                  "{0}model.add({2})\n"
     )
+
 
     bondStr = ("\n{0}## Bond from {1} to {2}\n"
                "{0}bgt.connect({1},{2})\n"

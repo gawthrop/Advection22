@@ -3,7 +3,15 @@
 import BondGraphTools as bgt
 import sympy as sp
 import copy
-#import RE
+import importlib as imp
+
+## Import RE if it exists
+spam_spec = imp.util.find_spec("RE")
+found = spam_spec is not None
+if found:
+    import RE
+else:
+    print('Module RE does not exist (only needed for ReRE)')
 
 def setStr():
     """ Create component strings
@@ -94,20 +102,24 @@ def unify(model,common=[],metamodel="C",quiet=False):
                         print("Exposing:","Ce:"+comp.name,"in",subsystem.name, "and connecting to", "0:"+jun.name)
 
 def create(name,comp,chain,quiet=False):
-
+    #print(name,comp,comp.name,comp.metamodel)
+    # if comp.metamodel == 'BG':
+    #     #print(comp.bonds)
     if not quiet:
         print("Creating", name, "from", comp.name, "within", chain.name)
     exec(name+" = copy.deepcopy(comp)")
     exec(name+".name = '"+name+"'")
     exec("chain.add("+name+")")
 
-def rename_instance(model,i,inport,outport,quiet=False):
+    #print(chain.components[0].bonds)
+
+def rename_instance(model,i,inport,outport,Comps=['C','R'],quiet=False):
     """Rename all non-port components in an instance indexed by i
     """
 
     comps = []
     for comp in model.components:
-        if comp.metamodel in ['C','R']:
+        if comp.metamodel in Comps:
             name = comp.name
             comps.append(name)
     #print(comps)
@@ -117,7 +129,8 @@ def rename_instance(model,i,inport,outport,quiet=False):
     #print(renames)
     rename(model,renames,quiet=quiet)
     
-def chain(model,inport='in',outport='out',N=2,rename_components=True,quiet=False):
+def chain(model0,inport='in',outport='out',N=2,
+          rename_components=True,Comps=['R','C'],quiet=False):
     """ Concatenate N instances of model via ports inport and outport
         The ports are represented in model as Ce components
         Ce:in in the first link of the chain and Ce:out in the last link remain as Ce components
@@ -125,6 +138,8 @@ def chain(model,inport='in',outport='out',N=2,rename_components=True,quiet=False
         and connecting them to a new Ce component with associated zero junction.
     """
 
+    model = copy.deepcopy(model0)
+    
     intname = "IS"
     name = model.name+"Chain"
     
@@ -152,8 +167,10 @@ def chain(model,inport='in',outport='out',N=2,rename_components=True,quiet=False
         ## Create the components
         cname = model.name+str(i)
         Model = copy.deepcopy(model)
+        # print('model.bonds:', model.bonds)
+        # print('Model.bonds:', Model.bonds)
         if rename_components:
-            rename_instance(Model,i,inport,outport,quiet=quiet)
+            rename_instance(Model,i,inport,outport,Comps=Comps,quiet=quiet)
         create(cname,Model,chain,quiet=quiet)
 
         if i>0:
@@ -334,29 +351,55 @@ def sink(model,names=[]):
         bgt.connect(model/junName,model/zeroReName)
         bgt.connect(model/zeroReName,model/zeroJunName)
 
-# def ReRE(model,quiet=True):
-#     """ Replace Re components by enzyme catalysed reaction RE """
-#     components = copy.copy(model.components)
-#     for comp in components:
-#         if comp.metamodel in ["R"]:
-#             name = comp.name
-#             if not quiet:
-#                 print("Converting reaction", name)
-#             re = RE.model()
-#             re.name = name
-#             rename(re,{'E':name+'ase'},quiet=quiet)
-#             rename(re,{'AE':name+'cmp'},quiet=quiet)
-#             rename(re,{'r1':name+'1'},quiet=quiet)
-#             rename(re,{'r2':name+'2'},quiet=quiet)
-#             model.add(re)
-#             bgt.expose(re / 'A','A')
-#             bgt.expose(re / 'B','B')
-#             for bond in model.bonds:
-#                 if comp is bond.head.component:
-#                     bgt.disconnect(bond.tail, bond.head)
-#                     bgt.connect(bond.tail,(re,'A'))
-#                 if comp is bond.tail.component:
-#                     bgt.disconnect(bond.tail, bond.head)
-#                     bgt.connect((re,'B'),bond.head)
+def modulate(sys,reaction):
+    """ Add modulation to each listed reaction """
 
-#             model.remove(comp)
+    ## Setup strings
+    junStr, CeStr, bondStr, ReStr = setStr()
+    
+    model = copy.copy(sys)
+    # print(model.components)
+    # print(model / 'comp_ROS2_junF')
+
+    mod_str = ''
+    for reac in reaction:
+        Name = 'mod_'+reac
+        junName = Name+'_jun'
+        forwardName = 'comp_'+reac+'_junF'
+        reverseName = 'comp_'+reac+'_junR'
+        
+        mod_str += f'## Adding modulation {Name}\n'
+        mod_str += CeStr.format(Name)
+        mod_str += junStr.format(junName,'0')
+        mod_str += bondStr.format(junName,Name)
+        mod_str += bondStr.format(junName,forwardName)
+        mod_str += bondStr.format(reverseName,junName)
+
+    return mod_str
+
+def ReRE(model,quiet=True):
+    """ Replace Re components by enzyme catalysed reaction RE """
+    components = copy.copy(model.components)
+    for comp in components:
+        if comp.metamodel in ["R"]:
+            name = comp.name
+            if not quiet:
+                print("Converting reaction", name)
+            re = RE.model()
+            re.name = name
+            rename(re,{'E':name+'ase'},quiet=quiet)
+            rename(re,{'AE':name+'cmp'},quiet=quiet)
+            rename(re,{'r1':name+'1'},quiet=quiet)
+            rename(re,{'r2':name+'2'},quiet=quiet)
+            model.add(re)
+            bgt.expose(re / 'A','A')
+            bgt.expose(re / 'B','B')
+            for bond in model.bonds:
+                if comp is bond.head.component:
+                    bgt.disconnect(bond.tail, bond.head)
+                    bgt.connect(bond.tail,(re,'A'))
+                if comp is bond.tail.component:
+                    bgt.disconnect(bond.tail, bond.head)
+                    bgt.connect((re,'B'),bond.head)
+
+            model.remove(comp)

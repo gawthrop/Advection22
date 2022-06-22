@@ -15,13 +15,20 @@ def F():
     F = const.physical_constants['Faraday constant'][0]
     return F
 
+def R():
+    """ Gas constant """
+    R = const.physical_constants['molar gas constant'][0]
+    return R
+
+def RT(T_cent=37):
+    """ Gas constant * Temperature """
+    T = 273.15 + T_cent         # Human temperature deg K
+    return R()*T
+
 def V_N(T_cent=37):
     """The V_N constant (=RT/F).
     """
-    T = 273.15 + T_cent         # Human temperature deg K
-    #F = const.physical_constants['Faraday constant'][0]
-    R = const.physical_constants['molar gas constant'][0]
-    V_N = (R*T)/F()
+    V_N = RT()/F()
     return V_N
 
 def indices(list,element):
@@ -35,9 +42,9 @@ def getName(sys,name):
     """ 
     Find the name of the component corresponding to a state
     """
-    if name[0] is 'x':
+    if name[0] == 'x':
         var = sys.state_vars[name]
-    elif name[0] is 'u':
+    elif name[0] == 'u':
         var = sys.control_vars[name]
     else:
         print("Cannot process", name)
@@ -46,11 +53,11 @@ def getName(sys,name):
     name = var[1]
 
     ## Assume that Re components are called r something (yuk)
-    if (name[0] is 'u') and (comp.name[0] is 'r'):
+    if (name[0] == 'u') and (comp.name[0] == 'r'):
         #name = comp.parent.name+':'+comp.name
         name = comp.name
     else:
-        if comp.metamodel is 'BG':
+        if comp.metamodel == 'BG':
             name = getName(comp,name)
         else:
             name = comp.name
@@ -527,6 +534,7 @@ def replaceRe(model,quiet=False):
 
     SfStr = "{0} = bgt.new('Sf',name='{0}')\n"
     components = copy.copy(model.components)
+    #print(model.bonds)
     for comp in components:
         if comp.metamodel in ['BG']:
             replaceRe(comp,quiet=quiet)
@@ -538,18 +546,24 @@ def replaceRe(model,quiet=False):
                 print("Swapping Re:" + name, "for two Sf in", model.name)
             
             ## Find what it is connected to, and disconnect
-            for bond in model.bonds:
-                
+            forward_comp = None
+            reverse_comp = None
+            bonds = copy.copy(model.bonds) # ????
+            for bond in bonds:
+                #print(bond)
                 ## Forward connection
-                if bond.head.component is comp:
+                # print(comp.name, bond.head.component.name, comp.name is bond.head.component.name)
+                # print(comp.name, bond.tail.component.name, comp.name is bond.tail.component.name)
+                if bond.head.component.name is comp.name:
                     forward_comp = bond.tail.component
-                    ##print("forward:", forward_comp, bond.tail)
+                    # print("forward:", forward_comp, bond.tail) 
                     bgt.disconnect(forward_comp,comp)
+
                     
                 ## Reverse connection
-                if bond.tail.component is comp:
+                if bond.tail.component.name is comp.name:
                     reverse_comp = bond.head.component
-                    ##print ("reverse:",reverse_comp)
+                    # print ("reverse:",reverse_comp)
                     bgt.disconnect(comp,reverse_comp)
                         
             ## Remove the Re
@@ -561,9 +575,19 @@ def replaceRe(model,quiet=False):
             bgt.add(model,new_comp);
         
             ## and reconnect
-            bgt.connect(forward_comp,(new_comp,0))
-            bgt.connect((new_comp,1),reverse_comp)
-
+            # if not quiet:
+            #     print("forward:", forward_comp)
+            #     print ("reverse:",reverse_comp)
+                
+            if not forward_comp is None:
+                bgt.connect(forward_comp,(new_comp,0))
+            else:
+                print('No forward component')
+                
+            if not reverse_comp is None:
+                bgt.connect((new_comp,1),reverse_comp)
+            else:
+                print('No reverse component')
             # ## Create two Sf components instead
             # name_f = name+"_Sf_f"
             # name_r = name+"_Sf_r"
@@ -748,6 +772,33 @@ def prodStoichName(stoich,name):
         prods.append(prod[:-3])
     return prods
 
+
+def reacSym(reac,s,chemformula=False):
+    """ Reaction symbol """
+
+    if 'UniDir' in s.keys():
+        UniDir = s['UniDir']
+    else:
+        UniDir = None
+        
+    if UniDir is not None:
+        uni = reac in UniDir
+    else:
+        uni = False
+        
+    if chemformula:
+        if uni:
+            eq = "& -> "
+        else:
+            eq = "& <> "
+    else:
+        if uni:
+            eq = " &\\rightarrow "
+        else:
+            eq = " &\\Leftrightarrow "
+
+    return eq
+
 def sprintrl(s,align=True,chemformula=False,split=10,reaction=[],all=False,Phi=None,units="",showMu=False):
     """ Print the chemical reactions in LaTeX.
         usepackage{chemformula}
@@ -824,6 +875,7 @@ def sprintrl(s,align=True,chemformula=False,split=10,reaction=[],all=False,Phi=N
                 product += spec+" + "
 
         reac = s["reaction"][j].replace('__','.')
+        eq = reacSym(reac,s,chemformula) 
         reacStr += prefix + substrate[:-2] +  eq
         if chemformula:
             reacStr += "[ " + reac + " ] "
@@ -913,7 +965,7 @@ def getStoich(model,linear=[],chemostats=[],quiet=False):
 
     return N,Nf,Nr
 
-def stoich(model,chemostats=[],linear=[],N=None,K=None,G=None,quiet=False):
+def stoich(model,chemostats=[],linear=[],N=None,K=None,G=None,UniDir=None,quiet=False):
     """Return stoichometric information from a bond-graph model.
 
     Parameters:
@@ -1056,6 +1108,18 @@ def stoich(model,chemostats=[],linear=[],N=None,K=None,G=None,quiet=False):
     ## Convert to complex form
     Z,D = N2ZD(Nf,Nr)
 
+    ## Set up unidirectional reactions.
+    if not UniDir is None:
+        if not quiet:
+            print("Set up unidirectional reactions")
+        for j,reac in enumerate(reaction):
+            if reac in UniDir:
+                if not quiet:
+                    print(f"Setting reaction {reac}({j}) to unidirectional")
+                for i in range(n_X):
+                    if D[i,j] > 0:
+                        D[i,j] = 0
+
     ## Number of complexes
     n_Z = Z.shape[1]
 
@@ -1087,6 +1151,7 @@ def stoich(model,chemostats=[],linear=[],N=None,K=None,G=None,quiet=False):
              "species":species,
              "chemostats":chemostats,
              "reaction":reaction,
+             "UniDir":UniDir,
              "spec_index":spec_index,
              "reac_index":reac_index,
              "spec_par_name":spec_par_name,
@@ -1222,7 +1287,7 @@ def singleRemove(K):
 
     return np.delete(K,i_unit,axis=1)
 
-def path(s,sc,removeSingle=True,reducedState=True,pathname='pr'):
+def path(s,sc,removeSingle=True,reducedState=True,pathname='pr',useFR=False):
     """ 
     Pathway analysis
     Returns s structure for pathway-reduced system
@@ -1249,10 +1314,14 @@ def path(s,sc,removeSingle=True,reducedState=True,pathname='pr'):
         Nr_p = Nr@K
         
     sp["N"] = N_p
-    # sp["Nf"] = Nf_p
-    # sp["Nr"] = Nr_p
-    sp["Nf"] = -N_p*(N_p<0)
-    sp["Nr"] =  N_p*(N_p>0)
+
+    if useFR:
+        sp["Nf"] = Nf_p
+        sp["Nr"] = Nr_p
+    else:
+        sp["Nf"] = -N_p*(N_p<0)
+        sp["Nr"] =  N_p*(N_p>0)
+        
     dim = sp["N"].shape
     sp["n_X"] = dim[0]
     sp["n_V"] = dim[1]
@@ -1474,7 +1543,7 @@ def lin(s,sc,sf=None,model=None,x_ss=None,parameter=None,quiet=False,outvar='V',
         
         
     ## Create reduced form
-    if invar is 'phi':
+    if invar == 'phi':
         ## Include the steady-state: dphi/dx = 1/x_ss
         L_cX = L_cX@np.diag(X_ss)
     
@@ -1765,7 +1834,7 @@ def sim(s,sc=None,sf=None,X0=None,t=None,linear=False,V0=None,alpha=1,parameter=
     res['P_C'] = P_C
     return res
 
-def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,species=None,reaction=None,x=None,xlabel=None,xlim=None,ylim=None,i0=None,filename=None):
+def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,species=None,reaction=None,x=None,xlabel=None,xlim=None,ylim=None,i0=None,filename=None,lw=4):
     """ Plot results of sim()
     
     Parameter:
@@ -1842,7 +1911,7 @@ def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,specie
             plt.xlim(xlim)
         if ylim is not None:
             plt.ylim(ylim)
-        plt.plot(t,X)
+        plt.plot(t,X,lw=lw)
         plt.grid()
         plt.xlabel(xlabel)
         plt.ylabel(specSym)
@@ -1855,7 +1924,7 @@ def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,specie
             plt.xlim(xlim)
         if ylim is not None:
             plt.ylim(ylim)
-        plt.plot(t,V)
+        plt.plot(t,V,lw=lw)
         plt.grid()
         plt.xlabel(xlabel)
         plt.ylabel(reacSym)

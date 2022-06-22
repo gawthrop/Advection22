@@ -2,20 +2,17 @@ name: python 3.6
 channels:
   - conda-forge
 dependencies:
-  - python=3.6
+  - python
   - numpy
   - matplotlib
   - sympy
-  - slycot
   - lxml
-  - pandas
   - xlrd
   - networkx
-  - control
   - pip
   - pip:
     - svgpathtools
     - datetime
     - cobra
-    - BondGraphTools==0.3.7
+    - BondGraphTools
 
