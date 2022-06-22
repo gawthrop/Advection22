@@ -17,5 +17,5 @@ dependencies:
     - svgpathtools
     - datetime
     - cobra
-    - BondGraphTools==0.4.6
+    - BondGraphTools==0.3.7
 
