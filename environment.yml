@@ -16,4 +16,3 @@ dependencies:
     - datetime
     - cobra
     - BondGraphTools
-    - csv
