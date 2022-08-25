@@ -10,6 +10,7 @@ dependencies:
   - lxml
   - xlrd
   - networkx
+  - csv
   - pip
   - pip:
     - svgpathtools
