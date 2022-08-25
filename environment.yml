@@ -10,11 +10,10 @@ dependencies:
   - lxml
   - xlrd
   - networkx
-  - csv
   - pip
   - pip:
     - svgpathtools
     - datetime
     - cobra
     - BondGraphTools
-
+    - csv
