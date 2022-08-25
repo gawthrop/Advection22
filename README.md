@@ -1,8 +1,7 @@
 # Supplementary code for "Energy-based Advection Modelling Using Bond Graphs"
 
 
-## Notebooks
-[![NBViewer](https://github.com/jupyter/design/blob/master/logos/Badges/nbviewer_badge.svg)](https://nbviewer.jupyter.org/github/gawthrop/tmp/tree/main/) [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/gawthrop/tmp/main)
+# Notebooks
 
 The nbviewer links will display the notebooks containing the code for each of the examples. These notebooks can be interactively run online using the Binder links.
 
