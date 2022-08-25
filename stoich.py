@@ -1834,7 +1834,7 @@ def sim(s,sc=None,sf=None,X0=None,t=None,linear=False,V0=None,alpha=1,parameter=
     res['P_C'] = P_C
     return res
 
-def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,species=None,reaction=None,x=None,xlabel=None,xlim=None,ylim=None,i0=None,filename=None,lw=4):
+def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,species=None,reaction=None,x=None,xlabel=None,ylabel=None,xlim=None,ylim=None,i0=None,filename=None,lw=4):
     """ Plot results of sim()
     
     Parameter:
@@ -1872,11 +1872,16 @@ def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,specie
 
     if x is None:
         t = copy.copy(res['t'][-i1:])
-        xlabel = '$t$'
+        if xlabel is None:
+            xlabel = '$t$'
+        if ylabel is None:
+            ylabel = specSym
     else:
         t = copy.copy(x[-i1:])
         if xlabel is None:
             xlabel = '$x$'
+        if ylabel is None:
+            ylabel = specSym
 
     if species is None:
         X = copy.copy(res[specSym][-i1:,:])
@@ -1914,7 +1919,7 @@ def plot(s,res,plotPhi=False,plotPower=False,x_ss=None,v_ss=None,dX=False,specie
         plt.plot(t,X,lw=lw)
         plt.grid()
         plt.xlabel(xlabel)
-        plt.ylabel(specSym)
+        plt.ylabel(ylabel)
         plt.legend(Species)
         
     if len(Reaction)>0:
